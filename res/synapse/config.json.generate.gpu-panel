@@ -1,0 +1,102 @@
+VALUE=0
+GPUFREQ='0:"0: 307 MHz", 1:"1: 384 MHz", 2:"2: 512 MHz"'
+
+cat << CTAG
+{
+    name:GPU & Panel,
+    elements:[
+	{ STitleBar:{
+		title:"GPU Frequency Scaling"
+	}},
+	{ SLiveLabel:{
+		title:"GPU Frequency",
+		refresh:1000,
+		action:"live gpufreq"
+	}},
+	{ SSeekBar:{
+       		title:"GPU Max Frequency",
+		description:"Set the maximum freqency the GPU scales up to.",
+		default:`cat /sys/devices/system/cpu/cpu0/cpufreq/gpu_oc`,
+		action:"generic /sys/devices/system/cpu/cpu0/cpufreq/gpu_oc",
+		values:{
+`
+			echo $GPUFREQ
+`
+		}
+	}},
+	{ SPane:{
+		title:"Screen"
+	}},
+	{ SCheckBox:{
+		description:"Decreases the brightness of mostly-white backgrounds to save battery.",
+                label:"Content Adaptive Brightness",
+                default:`cat /sys/class/backlight/s6e8aa0/acl_set`,
+                action:"generic /sys/class/backlight/s6e8aa0/acl_set"
+        }},
+	{ SPane:{
+		title:"Trinity Contrast",
+		description:"Set the luminance difference between dark and light."
+	}},
+	{ SSeekBar:{
+		default:`cat /sys/module/panel_s6e8aa0/parameters/contrast`,
+		action:"generic /sys/module/panel_s6e8aa0/parameters/contrast",
+		max:16, min:-24
+	}},
+	{ SPane:{
+		title:"OMAP Gamma Contrast",
+		description:"Set midtones (middle gray levels)."
+	}},
+	{ SSeekBar:{
+		default:`cat /sys/devices/platform/omapdss/manager0/gamma`,
+		action:"generic /sys/devices/platform/omapdss/manager0/gamma",
+		max:10
+	}},
+	{ SPane:{
+		title:"Color Multiplier",
+		description:"Adjust RGB color levels."
+	}},
+`
+	for COLOR in \`cat /sys/class/misc/colorcontrol/multiplier\` ; do
+		VALUE=$(($VALUE+1))
+		echo '{ SSeekBar:{ '
+			case $VALUE in
+			1)
+				echo 'title:"Red"' ;;
+			2)
+				echo 'title:"Green"' ;;
+			3)
+				echo 'title:"Blue"' ;;
+			esac
+			echo ', action:"color multiplier '${VALUE}'",
+			max:400 }},'
+	done
+`
+	{ SCheckBox:{
+		description:"Lock color values to a range with a possibly decreased likelihood to cause screen burn-in.",
+                label:"Safety Limit",
+                default:`cat /sys/class/misc/colorcontrol/safety_enabled`,
+                action:"generic /sys/class/misc/colorcontrol/safety_enabled"
+        }},
+	{ SPane:{
+		title:"RGB Gamma Offset",
+		description:"Gamma Offset controls shadows/blacks of the display by changing the brightness/color tint levels while leaving midtones and highlight areas unaffected."
+	}},
+`
+	for COLOR in \`cat /sys/class/misc/colorcontrol/v1_offset\` ; do
+		VALUE=$(($VALUE+1))
+		echo '{ SSeekBar:{ '
+			case $VALUE in
+			1)
+				echo 'title:"Red"' ;;
+			2)
+				echo 'title:"Green"' ;;
+			3)
+				echo 'title:"Blue"' ;;
+			esac
+			echo ', action:"color offset '${VALUE}'",
+			max:30, min:-30 }},'
+	done
+`
+    ]
+}
+CTAG

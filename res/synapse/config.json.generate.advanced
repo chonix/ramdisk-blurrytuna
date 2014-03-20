@@ -1,0 +1,177 @@
+cat << CTAG
+{
+    name:Advanced,
+    elements:[
+      { SPane:{
+		title:"Low Memory Killer",
+		description:"Minfree; all values are multiplied by 256 pages."
+      }},
+`
+	for LMK in 1 2 3 4 5 6; do
+		echo '{ SSeekBar:{ '
+			case $LMK in
+			1)
+				echo 'title:"Foreground App"' ;;
+			2)
+				echo 'title:"Visible App"' ;;
+			3)
+				echo 'title:"Secondary Server"' ;;
+			4)
+				echo 'title:"Hidden App"' ;;
+			5)
+				echo 'title:"Content Provider"' ;;
+			6)
+				echo 'title:"Empty App"' ;;
+			esac
+			echo ', action:"lmk '${LMK}'",
+			min:10, max:200 }},'
+	done
+`
+      { SPane:{
+		title:"Kernel Entropy"
+      }},
+	{ SLiveLabel:{
+		title:"Entropy Available",
+		refresh:1000,
+		action:"live entropy"
+	}},
+	{ SSeekBar:{
+		title:"Read Wakeup Threshold",
+		max:2048, min:64, step:64,
+		default:`cat /proc/sys/kernel/random/read_wakeup_threshold`,
+				action:"generic /proc/sys/kernel/random/read_wakeup_threshold"
+	}},
+	{ SSeekBar:{
+		title:"Write Wakeup Threshold",
+		max:2048, min:64, step:64,
+		default:`cat /proc/sys/kernel/random/write_wakeup_threshold`,
+				action:"generic /proc/sys/kernel/random/write_wakeup_threshold"
+	}},
+      { SPane:{
+		title:"Kernel Sched"
+      }},
+	{ SSeekBar:{
+		title:"Latency",
+		max:20000000, min:1000000, step:100000, unit:" ns",
+		default:`cat /proc/sys/kernel/sched_latency_ns`,
+				action:"generic /proc/sys/kernel/sched_latency_ns"
+	}},
+	{ SSeekBar:{
+		title:"Min Granularity",
+		max:20000000, min:1000000, step:100000, unit:" ns",
+		default:`cat /proc/sys/kernel/sched_min_granularity_ns`,
+				action:"generic /proc/sys/kernel/sched_min_granularity_ns"
+	}},
+	{ SSeekBar:{
+		title:"NR Migrate",
+		max:96, min:8, step:8,
+		default:`cat /proc/sys/kernel/sched_nr_migrate`,
+				action:"generic /proc/sys/kernel/sched_nr_migrate"
+	}},
+	{ SSeekBar:{
+		title:"RT Period",
+		max:2000000, min:10000, step:10000, unit:" us",
+		default:`cat /proc/sys/kernel/sched_rt_period_us`,
+				action:"generic /proc/sys/kernel/sched_rt_period_us"
+	}},
+	{ SSeekBar:{
+		title:"RT Runtime",
+		max:2000000, min:10000, step:10000, unit:" us",
+		default:`cat /proc/sys/kernel/sched_rt_runtime_us`,
+				action:"generic /proc/sys/kernel/sched_rt_runtime_us"
+	}},
+	{ SSeekBar:{
+		title:"Shares Window",
+		max:20000000, min:5000000, step:1000000, unit:" ns",
+		default:`cat /proc/sys/kernel/sched_shares_window`,
+				action:"generic /proc/sys/kernel/sched_shares_window"
+	}},
+	{ SSeekBar:{
+		title:"Time Average",
+		max:2000, min:100, step:100, unit:" ns",
+		default:`cat /proc/sys/kernel/sched_time_avg`,
+				action:"generic /proc/sys/kernel/sched_time_avg"
+	}},
+	{ SSeekBar:{
+		title:"Wakeup Granularity",
+		max:20000000, min:1000000, step:100000, unit:" ns",
+		default:`cat /proc/sys/kernel/sched_wakeup_granularity_ns`,
+				action:"generic /proc/sys/kernel/sched_wakeup_granularity_ns"
+	}},
+	{ SCheckBox:{
+                label:"Autogroup",
+                default:`cat /proc/sys/kernel/sched_autogroup_enabled`,
+                action:"generic /proc/sys/kernel/sched_autogroup_enabled"
+        }},
+	{ SCheckBox:{
+                label:"Child Runs First",
+                default:`cat /proc/sys/kernel/sched_child_runs_first`,
+                action:"generic /proc/sys/kernel/sched_child_runs_first"
+        }},
+	{ SCheckBox:{
+                label:"Tunable Scaling",
+                default:`cat /proc/sys/kernel/sched_tunable_scaling`,
+                action:"generic /proc/sys/kernel/sched_tunable_scaling"
+        }},
+      { SPane:{
+		title:"Other"
+      }},
+	{ SSeekBar:{
+		title:"Randomize VA Space", max:2,
+		default:`cat /proc/sys/kernel/randomize_va_space`,
+				action:"generic /proc/sys/kernel/randomize_va_space"
+	}},
+	{ SSeekBar:{
+		title:"FileSystem Lease Break Time",
+		max:100, min:1, unit:" s",
+		default:`cat /proc/sys/fs/lease-break-time`,
+				action:"generic /proc/sys/fs/lease-break-time"
+	}},
+      { SPane:{
+		title:"Kernel Samepage Merging"
+      }},
+	{ SCheckBox:{
+                description:"UKSM combines duplicate memory pages of different processes to possibly improve usage/performance of system memory.",
+                label:"Ultra Kernel Samepage Merging",
+                default:`cat /sys/kernel/mm/uksm/run`,
+                action:"generic /sys/kernel/mm/uksm/run"
+        }},
+	{ SSeekBar:{
+		title:"Abundant Threshold",
+		max:100, min:1,
+		default:`cat /sys/kernel/mm/uksm/abundant_threshold`,
+				action:"generic /sys/kernel/mm/uksm/abundant_threshold"
+	}},
+	{ SOptionList:{
+		title:"KSM CPU Governor",
+		default:`echo $(/res/synapse/actions/bracket-option /sys/kernel/mm/uksm/cpu_governor)`,
+		action:"bracket-option /sys/kernel/mm/uksm/cpu_governor",
+		values:[
+`
+			for KSMGOV in \`cat /sys/kernel/mm/uksm/cpu_governor | sed -e 's/\]//;s/\[//'\`; do
+			  echo "\"$KSMGOV\","
+			done
+`
+		]
+	}},
+	{ SSeekBar:{
+		title:"Max CPU Percentage",
+		max:100, min:1, unit:"%",
+		default:`cat /sys/kernel/mm/uksm/max_cpu_percentage`,
+				action:"generic /sys/kernel/mm/uksm/max_cpu_percentage"
+	}},
+	{ SSeekBar:{
+		title:"Sleep",
+		max:500, min:1, unit:" ms",
+		default:`cat /sys/kernel/mm/uksm/sleep_millisecs`,
+				action:"generic /sys/kernel/mm/uksm/sleep_millisecs"
+	}},
+	{ SSeekBar:{
+		title:"Thrash Threshold",
+		max:100, min:1,
+		default:`cat /sys/kernel/mm/uksm/thrash_threshold`,
+				action:"generic /sys/kernel/mm/uksm/thrash_threshold"
+	}},
+    ]
+}
+CTAG
